@@ -7,6 +7,11 @@ Function STRING get(STRING)
 Function VOID global_set(STRING, STRING)
 Function STRING global_get(STRING)
 
+# Delete/unset a global
+Function VOID global_del(STRING)
+# Delete *any* non-global
+Function VOID del(STRING)
+
 Function VOID set_int(STRING, INT)
 Function INT get_int(STRING)
 Function VOID set_string(STRING, STRING)
@@ -15,4 +20,8 @@ Function VOID set_real(STRING, REAL)
 Function REAL get_real(STRING)
 Function VOID set_duration(STRING, DURATION)
 Function DURATION get_duration(STRING)
+
+# Clear all session vars
 Function VOID clear()
+# Clear all global vars
+Function VOID global_clear()

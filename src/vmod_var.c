@@ -140,6 +140,26 @@ vmod_get(struct sess *sp, const char *name)
 }
 
 void
+vmod_del(struct sess *sp, const char *name)
+{
+	struct var_head *vh;
+	struct var *v;
+	if (name == NULL)
+		return;
+	vh = get_vh(sp);
+	assert(vh != NULL);
+	v = vh_get_var(vh, name);
+	if (v) {
+		VTAILQ_REMOVE(&vh->vars, v, list);
+		/* This leaks but the memory should all be reclaimed when
+		 * the current request is completed.
+		 */
+		v->value.STRING = NULL;
+		v->name = NULL;
+	}
+}
+
+void
 vmod_set_string(struct sess *sp, const char *name, const char *value)
 {
 	struct var *v;
@@ -165,7 +185,6 @@ vmod_get_string(struct sess *sp, const char *name)
 		return NULL;
 	return (v->value.STRING);
 }
-
 
 #define VMOD_SET_X(vcl_type_u, vcl_type_l, ctype) \
 void \
@@ -211,6 +230,29 @@ void vmod_clear(struct sess *sp)
 }
 
 void
+vmod_global_clear(struct sess *sp)
+{
+	struct var *v,*nextv;
+
+	AZ(pthread_mutex_lock(&var_list_mtx));
+	VTAILQ_FOREACH_SAFE(v, &global_vars, list, nextv) {
+		CHECK_OBJ_NOTNULL(v, VAR_MAGIC);
+		AN(v->name);
+		VTAILQ_REMOVE(&global_vars, v, list);
+		if (v->type == STRING && v->value.STRING) {
+			free(v->value.STRING);
+			v->value.STRING = NULL;
+		}
+		if (v->name) {
+			free(v->name);
+			v->name = NULL;
+		}
+		FREE_OBJ(v);
+	}
+	AZ(pthread_mutex_unlock(&var_list_mtx));
+}
+
+void
 vmod_global_set(struct sess *sp, const char *name, const char *value)
 {
 	struct var *v;
@@ -245,6 +287,40 @@ vmod_global_set(struct sess *sp, const char *name, const char *value)
 	AZ(pthread_mutex_unlock(&var_list_mtx));
 }
 
+void
+vmod_global_del(struct sess *sp, const char *name)
+{
+	struct var *v;
+	const char *r = NULL;
+
+	if (name == NULL)
+		return;
+
+	AZ(pthread_mutex_lock(&var_list_mtx));
+	VTAILQ_FOREACH(v, &global_vars, list) {
+		CHECK_OBJ_NOTNULL(v, VAR_MAGIC);
+		AN(v->name);
+		if (strcmp(v->name, name) == 0)
+			break;
+	}
+
+	if(v) {
+		VTAILQ_REMOVE(&global_vars, v, list);
+		if (v->type == STRING && v->value.STRING) {
+			free(v->value.STRING);
+			v->value.STRING = NULL;
+		}
+
+		if(v->name) {
+			free(v->name);
+			v->name = NULL;
+		}
+
+	  FREE_OBJ(v);
+	}
+}
+
+
 const char *
 vmod_global_get(struct sess *sp, const char *name)
 {
@@ -265,3 +341,5 @@ vmod_global_get(struct sess *sp, const char *name)
 	AZ(pthread_mutex_unlock(&var_list_mtx));
 	return(r);
 }
+
+/* vi: set ts=2 sw=2 noet ai tw=0: */
