@@ -1,10 +1,10 @@
 ============
-vmod_example
+vmod_var
 ============
 
-----------------------
-Varnish Example Module
-----------------------
+-----------------------------------------
+Varnish Variable/Association List Module
+-----------------------------------------
 
 :Author: Tollef Fog Heen
 :Date: 2011-09-28
@@ -64,6 +64,19 @@ There are similar functions named:
 
 get and set are shorthand for get_string and set_string.
 
+del
+-----
+
+Prototype
+	Function VOID del()
+Returns
+	NONE
+Description
+	Delete a variable. Does nothing if the variable
+	doesn't exist.
+Example
+	var.del("state");
+
 clear
 -----
 
@@ -74,7 +87,52 @@ Returns
 Description
 	Clears out all the variables.
 Example
-	
+	var.clear();
+
+GLOBALS
+=======
+
+Global variables can be managed via the var.global_set,
+var.global_get and var.global_del functions. All global values
+must be strings.
+
+global_set
+----------
+
+Prototype
+	Function VOID global_set(STRING S, STRING T)
+Returns
+	NONE
+Description
+	Sets the global variable S to T (globals are visible
+	for all sessions and requests).
+Example
+	var.global_set("state","active");
+
+global_get
+----------
+Prototype
+	Function STRING global_get(STRING S)
+Returns
+	STRING
+Description
+	Returns the global variable named S (globals are visible
+	for all sessions and requests).
+Example
+	var.global_get("state");
+
+global_del
+----------
+Prototype
+	Function VOID global_del(STRING S)
+Returns
+	VOID
+Description
+	Deletes the global variable named S (globals are visible
+	for all sessions and requests).
+Example
+	var.global_del("state");
+
 
 HISTORY
 =======
