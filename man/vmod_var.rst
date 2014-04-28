@@ -1,9 +1,9 @@
 ============
-vmod_example
+vmod_var
 ============
 
 ----------------------
-Varnish Example Module
+Varnish Var Module
 ----------------------
 
 :Author: Tollef Fog Heen

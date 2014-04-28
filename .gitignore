@@ -23,7 +23,9 @@ Makefile.in
 /ltmain.sh
 /missing
 /stamp-h1
-/m4/
+/m4/*.m4
+!varnish.m4
 
 /src/vcc_if.c
 /src/vcc_if.h
+/man/*.3
